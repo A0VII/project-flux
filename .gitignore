@@ -1,0 +1,54 @@
+# ============================================================
+# Terraform — NEVER commit these
+# ============================================================
+# State files contain plaintext secrets and resource IDs
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform working directory (downloaded providers, cache)
+.terraform/
+.terraform.lock.hcl
+
+# Terraform variable files often contain secrets
+*.tfvars
+*.tfvars.json
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files (local developer overrides)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ============================================================
+# AWS — NEVER commit these
+# ============================================================
+# AWS credentials and config (should live in ~/.aws/ only)
+.aws/
+credentials
+*credentials*
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv
+venv/
+*.egg-info/
+
+# ============================================================
+# OS / Editor junk
+# ============================================================
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log

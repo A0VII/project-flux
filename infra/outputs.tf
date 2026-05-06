@@ -1,8 +1,3 @@
-# ============================================================
-# Outputs — values exposed after terraform apply
-# These are referenced by other modules and the CI/CD pipeline
-# ============================================================
-
 output "events_bucket_name" {
   description = "S3 bucket name for raw event storage"
   value       = aws_s3_bucket.events.bucket

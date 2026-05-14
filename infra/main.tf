@@ -1,7 +1,3 @@
-# ============================================================
-# Terraform configuration — provider + remote state backend
-# ============================================================
-
 terraform {
   required_version = ">= 1.9.0"
 
@@ -10,10 +6,12 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
   }
 
-  # Remote state — stored in S3, locked via DynamoDB
-  # This bucket was created manually (bootstrap) before Terraform init
   backend "s3" {
     bucket         = "project-flux-tfstate-507221376720"
     key            = "project-flux/terraform.tfstate"

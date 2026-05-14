@@ -52,3 +52,23 @@ output "sqs_dlq_arn" {
   description = "SQS Dead Letter Queue ARN"
   value       = aws_sqs_queue.events_dlq.arn
 }
+
+output "lambda_function_name" {
+  description = "Lambda processor function name"
+  value       = aws_lambda_function.processor.function_name
+}
+
+output "lambda_function_arn" {
+  description = "Lambda processor function ARN"
+  value       = aws_lambda_function.processor.arn
+}
+
+output "dynamodb_table_name" {
+  description = "DynamoDB device state table name"
+  value       = aws_dynamodb_table.device_state.name
+}
+
+output "dynamodb_table_arn" {
+  description = "DynamoDB device state table ARN"
+  value       = aws_dynamodb_table.device_state.arn
+}

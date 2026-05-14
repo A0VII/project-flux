@@ -70,3 +70,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Verified
 - curl POST /events returns HTTP 202
 - SQS receive-message returns full event payload (end-to-end confirmed)
+
+## [0.4.0] — 2026-05-11 — Lambda Processor and Storage Layer
+
+### Added
+- Lambda function project-flux-processor-dev (python3.12, 256MB, 30s timeout)
+- SQS event source mapping: batch_size=10, ReportBatchItemFailures enabled
+- DynamoDB table project-flux-device-state-dev: PAY_PER_REQUEST, KMS, PITR, TTL
+- CloudWatch log group for Lambda: 14-day retention, KMS encrypted
+- Lambda IAM policies: DynamoDB read/write on device-state table
+- Archive Terraform provider for automated Lambda zip packaging
+- src/lambda/handler.py: full event processor with structured logging
+- docs/demo/: 7 portfolio screenshots covering all pipeline layers
+
+### Architecture
+- S3 pattern: time-partitioned keys events/YYYY/MM/DD/device_id/event_id.json
+- DynamoDB pattern: single-table latest-state index per device_id with TTL
+- Partial batch failure: failed SQS messages retry individually
+- AWS clients at module level for warm invocation reuse
+- SNS alert path implemented, wired to topic in Step 7
+
+### Fixed
+- .gitignore: committed .terraform.lock.hcl per HashiCorp recommendation
+- .gitignore: excluded src/lambda/handler.zip build artifact
+
+### Verified
+- Full pipeline: curl -> API Gateway -> SQS -> Lambda -> S3 + DynamoDB
+- Cold start: 520ms | Processing: 315ms | Memory: 98MB/256MB
+- Correlation ID consistent across S3 key, DynamoDB record, CloudWatch logs
+- Structured JSON logs confirmed in CloudWatch Log Management console

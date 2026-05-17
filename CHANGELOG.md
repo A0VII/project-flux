@@ -99,3 +99,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Cold start: 520ms | Processing: 315ms | Memory: 98MB/256MB
 - Correlation ID consistent across S3 key, DynamoDB record, CloudWatch logs
 - Structured JSON logs confirmed in CloudWatch Log Management console
+
+## [0.5.0] — 2026-05-17 — CloudWatch Observability
+
+### Added
+- SNS topic project-flux-alerts-dev: KMS encrypted, receives all alarm notifications
+- CloudWatch metric filter: EventsProcessed (custom namespace ProjectFlux/dev)
+- CloudWatch metric filter: ProcessingErrors (ERROR level log pattern)
+- CloudWatch metric filter: CriticalRiskEvents (SNS alert published pattern)
+- CloudWatch alarm: lambda-errors (threshold 1, 5min window)
+- CloudWatch alarm: pipeline-stall (LessThan 1 event/10min, treat_missing=breaching)
+- CloudWatch alarm: dlq-not-empty (threshold 0 — any DLQ message triggers)
+- CloudWatch alarm: lambda-slow (p95 Duration > 20000ms)
+- CloudWatch alarm: queue-depth (SQS backlog > 100)
+- CloudWatch dashboard project-flux-dev: 6 widgets + alarm status panel
+
+### Design Decisions
+- treat_missing_data=breaching on pipeline-stall: absence of events IS the problem
+- treat_missing_data=notBreaching on error/DLQ alarms: no data means nothing bad
+- Custom metric namespace ProjectFlux/dev separates app metrics from AWS/Lambda
+- Dashboard threshold annotations show warn/timeout boundaries on duration widget
+
+### Verified
+- Dashboard live and rendering all 6 widgets
+- pipeline-stall alarm correctly entered ALARM state (working as designed)
+- lambda-errors alarm correctly in OK state

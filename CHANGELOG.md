@@ -124,3 +124,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dashboard live and rendering all 6 widgets
 - pipeline-stall alarm correctly entered ALARM state (working as designed)
 - lambda-errors alarm correctly in OK state
+
+## [0.6.0] — 2026-05-25 — SNS Alerting
+
+### Added
+- sns.tf: email subscription to project-flux-alerts-dev (confirmed)
+- sns.tf: Lambda IAM policy for sns:Publish on alerts topic
+- kms.tf: SNS and CloudWatch principals added to KMS key policy
+- lambda.tf: SNS_TOPIC_ARN env var wired to real topic ARN
+
+### Verified
+- End-to-end alert chain confirmed working
+- Red risk state event triggered email to inbox within 60 seconds
+- Subject: [DEV] Critical Risk: Red - device-critical-001
+- Lambda CloudWatch logs confirm SNS alert published
+- Dashboard showing live metrics: EventsProcessed, CriticalRiskEvents

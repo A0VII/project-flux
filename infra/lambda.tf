@@ -54,7 +54,7 @@ resource "aws_lambda_function" "processor" {
     variables = {
       EVENTS_BUCKET = aws_s3_bucket.events.bucket
       DEVICE_TABLE  = aws_dynamodb_table.device_state.name
-      SNS_TOPIC_ARN = "" # populated in Step 7 when SNS is added
+      SNS_TOPIC_ARN = aws_sns_topic.alerts.arn
       ENVIRONMENT   = var.environment
     }
   }

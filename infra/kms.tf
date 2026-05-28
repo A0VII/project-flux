@@ -1,13 +1,5 @@
 # ============================================================
 # KMS — Customer Managed Key for encryption at rest
-#
-# Why a CMK instead of AWS-managed keys?
-# AWS-managed keys (aws/s3, aws/lambda) are free and automatic,
-# but you can't control their rotation, audit their usage in
-# detail, or use them across services. A CMK gives us:
-#   - Explicit rotation policy (annual)
-#   - Detailed CloudTrail logs of every encrypt/decrypt call
-#   - One key that all Project Flux resources share
 # ============================================================
 
 resource "aws_kms_key" "flux" {
@@ -19,7 +11,6 @@ resource "aws_kms_key" "flux" {
     Version = "2012-10-17"
     Statement = [
       {
-        # Root account has full key administration rights
         Sid    = "EnableRootAccountAccess"
         Effect = "Allow"
         Principal = {
@@ -29,7 +20,6 @@ resource "aws_kms_key" "flux" {
         Resource = "*"
       },
       {
-        # Lambda role can use the key to encrypt/decrypt data
         Sid    = "AllowLambdaEncryption"
         Effect = "Allow"
         Principal = {
@@ -43,7 +33,6 @@ resource "aws_kms_key" "flux" {
         Resource = "*"
       },
       {
-        # CloudWatch Logs needs to use the key to encrypt log groups
         Sid    = "AllowCloudWatchLogs"
         Effect = "Allow"
         Principal = {
@@ -51,6 +40,32 @@ resource "aws_kms_key" "flux" {
         }
         Action = [
           "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:GenerateDataKey",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowSNSEncryption"
+        Effect = "Allow"
+        Principal = {
+          Service = "sns.amazonaws.com"
+        }
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowCloudWatchAlarmsToPublishToSNS"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudwatch.amazonaws.com"
+        }
+        Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey",
           "kms:DescribeKey"

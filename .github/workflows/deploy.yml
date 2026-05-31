@@ -1,0 +1,124 @@
+# ============================================================
+# Project Flux — CI/CD Pipeline
+#
+# Runs on every push to main and on pull requests.
+# Jobs: security scan → validate → plan
+#
+# Why no auto-apply?
+# Infrastructure auto-apply requires approval gates, staged
+# rollouts, and rollback plans beyond the scope of this project.
+# Plan-only CI proves the configuration is always valid and
+# shows exactly what would change before any human applies it.
+# ============================================================
+
+name: Terraform CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  TF_VERSION: "1.9.0"
+  AWS_REGION: "ap-south-1"
+  WORKING_DIR: "./infra"
+
+jobs:
+
+  # ── Job 1: Security scan ────────────────────────────────────
+  # tfsec scans Terraform for security misconfigurations before
+  # anything else runs. Fast feedback on security issues.
+  security-scan:
+    name: Security Scan (tfsec)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ${{ env.WORKING_DIR }}
+          soft_fail: true
+          # soft_fail: true means security warnings don't block
+          # the pipeline — they show as warnings, not failures.
+          # In production, set to false to enforce security gates.
+
+  # ── Job 2: Terraform validate ───────────────────────────────
+  # Validates syntax and internal consistency of all .tf files.
+  # Does not require AWS credentials — purely local check.
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    needs: security-scan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init (local only)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend=false \
+            -input=false
+        # -backend=false skips S3 backend connection
+        # validate doesn't need remote state
+
+      - name: Terraform validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate
+
+  # ── Job 3: Terraform plan ───────────────────────────────────
+  # Connects to AWS and shows exactly what would change.
+  # Requires AWS credentials stored as GitHub Secrets.
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform plan \
+            -input=false \
+            -var="aws_account_id=${{ secrets.AWS_ACCOUNT_ID || '507221376720' }}" \
+            -no-color \
+            2>&1 | tee plan_output.txt
+        # -no-color: cleaner output in GitHub Actions logs
+        # tee: saves output for potential future artifact upload
+
+      - name: Upload plan output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terraform-plan-${{ github.run_number }}
+          path: ${{ env.WORKING_DIR }}/plan_output.txt
+          retention-days: 7

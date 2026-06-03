@@ -8,7 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### In Progress
-- Core infrastructure IaC (S3, KMS, IAM roles)
+- Event generator script (Step 9)
+- End-to-end demo run + final documentation (Step 10)
 
 ---
 
@@ -48,7 +49,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Terraform backend: `project-flux-tfstate-507221376720` (ap-south-1)
 - State lock: DynamoDB table `project-flux-tfstate-lock`
 
-## [0.3.0] — $(date +%Y-%m-%d) — Ingestion Pipeline
+---
+
+## [0.3.0] — 2026-05-06 — Ingestion Pipeline
 
 ### Added
 - SQS events queue: KMS encrypted, 1-day retention, 30s visibility timeout
@@ -70,6 +73,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Verified
 - curl POST /events returns HTTP 202
 - SQS receive-message returns full event payload (end-to-end confirmed)
+
+---
 
 ## [0.4.0] — 2026-05-11 — Lambda Processor and Storage Layer
 
@@ -100,6 +105,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Correlation ID consistent across S3 key, DynamoDB record, CloudWatch logs
 - Structured JSON logs confirmed in CloudWatch Log Management console
 
+---
+
 ## [0.5.0] — 2026-05-17 — CloudWatch Observability
 
 ### Added
@@ -125,6 +132,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - pipeline-stall alarm correctly entered ALARM state (working as designed)
 - lambda-errors alarm correctly in OK state
 
+---
+
 ## [0.6.0] — 2026-05-25 — SNS Alerting
 
 ### Added
@@ -139,3 +148,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Subject: [DEV] Critical Risk: Red - device-critical-001
 - Lambda CloudWatch logs confirm SNS alert published
 - Dashboard showing live metrics: EventsProcessed, CriticalRiskEvents
+
+---
+
+## [0.7.0] — 2026-05-28 — CI/CD Pipeline
+
+### Added
+- .github/workflows/deploy.yml: GitHub Actions pipeline (Terraform CI)
+- Job 1: tfsec security scan — runs on every push, soft_fail=true
+- Job 2: terraform validate — syntax check, no AWS credentials required
+- Job 3: terraform plan — connects to AWS, shows drift, uploads artifact
+
+### Design Decisions
+- Plan-only pipeline: auto-apply requires approval gates beyond project scope
+- Sequential jobs via needs: — security first, then validate, then plan
+- soft_fail=true on tfsec: warnings visible but non-blocking (production: false)
+- Known improvement: replace static IAM keys with GitHub OIDC federation
+
+### Verified
+- Pipeline run #1: all 3 jobs green, 1m 10s total duration
+- tfsec: no HIGH severity findings
+- terraform validate: Success
+- terraform plan: No changes (infrastructure matches configuration)
+- Artifact: terraform-plan-1 uploaded (7-day retention)

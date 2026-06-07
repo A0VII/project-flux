@@ -171,3 +171,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - terraform validate: Success
 - terraform plan: No changes (infrastructure matches configuration)
 - Artifact: terraform-plan-1 uploaded (7-day retention)
+
+---
+
+## [0.8.0] — 2026-06-07 — Event Generator
+
+### Added
+- src/generator/send_events.py: synthetic telemetry event generator
+- Mode: single — one event, full JSON payload printed to terminal
+- Mode: burst — N events, weighted risk distribution (Green 70%, Yellow 20%, Red 8%, Red++ 2%)
+- Mode: scenario — full demo sequence (session_start → Green → Yellow → Red → recovery → session_end)
+- Coloured terminal output per risk state (green/yellow/red)
+- Realistic vital sign ranges per risk state (bpm + spo2)
+- Zero external dependencies — stdlib only (urllib, argparse, json)
+
+### Verified
+- 14/14 events accepted in scenario mode, all HTTP 202
+- Full Green→Yellow→Red→recovery sequence confirmed
+- Two Red alert emails received (risk_state_change + heartbeat)
+- CloudWatch pipeline-stall alarm email received (infrastructure alert path)
+- Dashboard: EventsProcessed=14, CriticalRiskEvents=3 live

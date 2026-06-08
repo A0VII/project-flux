@@ -7,9 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### In Progress
-- Event generator script (Step 9)
-- End-to-end demo run + final documentation (Step 10)
+All planned features complete. See v0.9.0.
 
 ---
 
@@ -191,3 +189,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Two Red alert emails received (risk_state_change + heartbeat)
 - CloudWatch pipeline-stall alarm email received (infrastructure alert path)
 - Dashboard: EventsProcessed=14, CriticalRiskEvents=3 live
+
+---
+
+## [0.9.0] — 2026-06-08 — Final Documentation and Portfolio Polish
+
+### Added
+- docs/runbook.md: operational runbook with deploy, demo, troubleshoot, teardown
+- docs/architecture.md: 8 architecture decisions with rationale and trade-offs
+
+### Changed
+- README.md: all 10 components marked Complete
+- README.md: verified pipeline statement added to footer
+- CHANGELOG.md: [Unreleased] closed
+
+### Project Complete
+Full serverless IoT telemetry pipeline operational:
+API Gateway → SQS → Lambda → S3 + DynamoDB + SNS → CloudWatch
+Encrypted with KMS CMK, deployed with Terraform, CI/CD via GitHub Actions
+End-to-end demo verified: scenario run, Red alert emails, live dashboard metrics

@@ -102,9 +102,9 @@ project-flux/
 | Storage layer | ✅ Complete | S3 time-partitioned + DynamoDB latest-state index |
 | Alerting — SNS | ✅ Complete | Email confirmed, Red events trigger real inbox alerts |
 | Observability | ✅ Complete | 5 alarms, 3 metric filters, 6-widget dashboard live |
-| CI/CD pipeline | 🔨 In progress | GitHub Actions — tfsec + validate + plan |
-| Event generator | ⏳ Pending | Python synthetic telemetry script |
-| End-to-end demo | ⏳ Pending | Full pipeline demo + portfolio documentation |
+| CI/CD pipeline | ✅ Complete | GitHub Actions — tfsec + validate + plan, all green |
+| Event generator | ✅ Complete | Python script: single / burst / scenario modes |
+| End-to-end demo | ✅ Complete | Full scenario run, Red alert email, live dashboard |
 
 ---
 
